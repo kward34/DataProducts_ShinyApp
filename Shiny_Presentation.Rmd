@@ -1,0 +1,141 @@
+---
+title: "Developing Data Products Shiny Application Project"
+author: "Kyle Ward"
+date: "March 28, 2019"
+output: ioslides_presentation
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(shiny)
+library(rsconnect)
+library(leaflet)
+library(plotly)
+library(tidyverse)
+library(widgetframe)
+library(Cairo)
+
+env1 = new.env()
+
+state_table_by_actyr <- readRDS("C:/Users/kward/DataScience/Fannie Mae ETL/Hackathon/Data_Products_Project/state_table_by_actyr.rds")
+us_geo <- readRDS("C:/Users/kward/DataScience/Fannie Mae ETL/Hackathon/Data_Products_Project/us_geo.rds")
+b <- readRDS("C:/Users/kward/DataScience/Fannie Mae ETL/Hackathon/Data_Products_Project/orig_amt_by_yr.rds")
+
+
+
+
+
+```
+
+
+
+## Fannie Mae Overview
+
+- Fannie Mae is a US government-sponsored enterprise responsible for supporting the secondary mortgage market
+- Fannie Mae buys mortgage loans and mortgages in order to securitize the loans
+- A web-based interactive application was created to provide loan performance analytics based on criteria selected by the end user
+- Data Source 
+    - Fannie Mae releases a sample of their loan portfolio's performance data in order to support public understanding
+    - The sample used in this project consists of 30-year and less, fully amortizing, full documentation, single-family, conventional fixed-rate mortgages
+
+  
+## Loan Acquisition Profile
+```{r acquisition plot, echo=FALSE}
+ay <- list(
+  tickfont = list(color = "black"),
+  overlaying = "y",
+  side = "right",
+  title = "number of loans"
+)
+
+p3 <- plot_ly(b,x=~vinyr, y=~total_orig_amt, name="UPB" ,type='bar' ) %>% 
+        layout(title="Loan Origination UPB by cohort",yaxis=list(title="Loan Origination UPB ($)"),yaxis2=ay,
+         xaxis=list(title="Cohort"))
+ 
+
+p3
+
+```
+
+- The loan acquisition profile portrays the value of Fannie Mae loans originated from 2000 to 2017
+
+## Loan Performance Application Objective
+
+- The Shiny application was developed to provide insights into the peformance of the loan portfolio over time
+- The application will allow the user to visualize the default rate for each state to identify geographicloan performance trends
+- The geospatial app can be found on github by selecting the following link: <link>
+
+
+
+## Interactive GeoSpatial App
+```{r, echo=FALSE}
+shinyApp(
+ui=fluidPage(
+  titlePanel(p("Default Rate by State by Year", style = "color:#3474A7")),
+  includeMarkdown('html/geospatial_description.md'),
+  sidebarLayout(
+      sidebarPanel(
+        selectInput(inputId = "activity_year_selected", label = "Select  activity year",
+                    choices = 2000:2018)),
+      mainPanel(
+        leafletOutput(outputId = "map")
+        )
+  )
+),
+server= function(input, output) {
+    output$map = renderLeaflet({
+      filtered_merge <-  state_table_by_actyr %>% 
+        dplyr::ungroup() %>% 
+        filter(actyr == input$activity_year_selected) %>%
+        tmaptools::append_data(
+          shp = us_geo, 
+          data =  ., 
+          key.shp = "STUSPS", 
+          key.data = "state", 
+          ignore.duplicates = TRUE)
+        
+      bins <- c(0, .01, .03, .06, .2, .25, .3, .35)
+      pal <- colorBin("YlOrRd", domain = filtered_merge$default_rate, bins = bins)
+      
+      labels <- sprintf(
+        "State: %s <br> default rate: %g",
+         filtered_merge$STUSPS, filtered_merge$default_rate) %>% 
+        lapply(htmltools::HTML)
+      
+      leaflet(filtered_merge) %>%
+        setView(-96, 37.8, 4) %>%
+        addTiles() %>%
+        addPolygons(
+          fillColor = ~pal(default_rate),
+          weight = 2,
+          opacity = 1,
+          color = "white",
+          dashArray = "3",
+          fillOpacity = 0.7,
+          highlight = highlightOptions(
+            weight = 5,
+            color = "#666",
+            dashArray = "",
+            fillOpacity = 0.7,
+            bringToFront = TRUE),
+          label = labels,
+          labelOptions = labelOptions(
+            style = list("font-weight" = "normal", padding = "3px 8px"),
+            textsize = "15px",
+            direction = "auto")) %>%
+        addLegend(pal = pal, values = ~default_rate, opacity = 0.7, title = "Default Rate",
+                  position = "bottomright")})
+},
+options = list(height = 200)
+  )   
+
+```
+
+
+
+## Thank You!
+
+
+
+
