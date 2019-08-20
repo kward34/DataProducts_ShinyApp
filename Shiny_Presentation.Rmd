@@ -1,7 +1,7 @@
 ---
 title: "Developing Data Products Shiny Application Project"
 author: "Kyle Ward"
-date: "August 15, 2019"
+date: "August 20, 2019"
 output: ioslides_presentation
 runtime: shiny
 ---
@@ -18,9 +18,9 @@ library(Cairo)
 
 env1 = new.env()
 
-state_table_by_actyr <- readRDS("C:/Users/kward/DataScience/Fannie Mae ETL/Hackathon/Data_Products_Project/state_table_by_actyr.rds")
-us_geo <- readRDS("C:/Users/kward/DataScience/Fannie Mae ETL/Hackathon/Data_Products_Project/us_geo.rds")
-b <- readRDS("C:/Users/kward/DataScience/Fannie Mae ETL/Hackathon/Data_Products_Project/orig_amt_by_yr.rds")
+state_table_by_actyr <- readRDS("state_table_by_actyr.rds")
+us_geo <- readRDS("us_geo.rds")
+b <- readRDS("orig_amt_by_yr.rds")
 
 
 
