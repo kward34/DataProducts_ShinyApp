@@ -1,7 +1,7 @@
 library(shiny)
 library(dplyr)
-state_table_by_actyr <- readRDS("C:/Users/kward/DataScience/Fannie Mae ETL/Hackathon/Data_Products_Project/state_table_by_actyr.rds")
-us_geo <- readRDS("C:/Users/kward/DataScience/Fannie Mae ETL/Hackathon/Data_Products_Project/us_geo.rds")
+state_table_by_actyr <- readRDS("state_table_by_actyr.rds")
+us_geo <- readRDS("us_geo.rds")
 shinyServer(
   function(input, output) {
     output$map = renderLeaflet({
